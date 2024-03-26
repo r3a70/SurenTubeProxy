@@ -47,15 +47,12 @@ jobs:
 
     - name: SSH to VPS
       uses: appleboy/ssh-action@v1.0.3
-      env:
-        PASSPHRASE: "${{ secrets.PASSPHRASE }}"
       with:
         host: ${{ secrets.VPS_HOST }}
         password: "${{ secrets.VPS_PASSWORD }}"
         username: ${{ secrets.VPS_USERNAME }}
-        envs: PASSPHRASE
         script: |
           cd /root/SurenTubeProxy
-          ./pull.sh $PASSPHRASE
+          git pull origin main
           docker compose pull
           docker compose up -d
