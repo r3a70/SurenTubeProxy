@@ -166,6 +166,10 @@ def test_configs_connection() -> None:
 
         os.mkdir("/tmp/x-ray-lates/okconfigs")
 
+    for file in os.listdir("/tmp/x-ray-lates/okconfigs"):
+
+        os.remove(os.path.join("/tmp/x-ray-lates/okconfigs", file))
+
     configs: list = os.listdir("/tmp/x-ray-lates/configs")
 
     for config in configs:
