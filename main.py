@@ -26,17 +26,17 @@ scheduler.add_job(
 scheduler.add_job(
     func=setup.main,
     trigger="interval",
-    hours=1
+    hours=6
 )
 scheduler.add_job(
     func=changer.main,
     trigger="date",
-    run_date=now() + timedelta(minutes=1)
+    run_date=now() + timedelta(minutes=5)
 )
 scheduler.add_job(
     func=changer.main,
     trigger="interval",
-    minutes=15
+    minutes=30
 )
 
 if __name__ == '__main__':

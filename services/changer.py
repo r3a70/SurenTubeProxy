@@ -33,13 +33,16 @@ def make_change(config: str) -> None:
             json.dump(data, new_json_file)
 
 
-def run_xray() -> int:
+def run_xray(last_used_proxy: str) -> int:
 
     configs: list = os.listdir("/tmp/x-ray-lates/okconfigs")
-    for i in range(10):
-        random.shuffle(configs)
 
-    config: str = random.choice(configs)
+    while True:
+
+        config: str = random.choice(configs)
+        if config != last_used_proxy:
+            break
+
     make_change(config=config)
     
     process: subprocess.Popen = subprocess.Popen(
@@ -48,7 +51,7 @@ def run_xray() -> int:
         # stdout=subprocess.PIPE
     )
 
-    return process.pid
+    return process.pid, config
 
 
 def main() -> None:
@@ -63,9 +66,9 @@ def main() -> None:
             logging.error(error)
         time.sleep(5)
 
-    pid: int = run_xray()
+    pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
     mongo_db[Collections.XRAY.value].insert_one(
         {
-            "is_pid": True, "pid": pid, "created_at": utcnow()
+            "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
         }
     )
