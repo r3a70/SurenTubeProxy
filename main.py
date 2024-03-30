@@ -7,7 +7,7 @@ import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from services import setup, changer
+from services import setup, changer, health_check
 from utils.times import now
 
 
@@ -37,6 +37,11 @@ scheduler.add_job(
     func=changer.main,
     trigger="interval",
     minutes=30
+)
+scheduler.add_job(
+    func=health_check.health_check_ips,
+    trigger="interval",
+    minutes=1
 )
 
 if __name__ == '__main__':
