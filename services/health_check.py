@@ -27,7 +27,7 @@ def health_check_ips() -> bool:
     except Exception as error:
         logging.error("An error acurred %s\n", error)
         query: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
-        ip: str = query.get("last_used_proxy") if query else ""
+        ip: str = query.get("last_used_proxy") if query else "nothing.json"
 
         if os.path.exists(os.path.join("/tmp/x-ray-lates/okconfigs", ip)):
 
