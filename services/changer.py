@@ -33,11 +33,13 @@ def make_change(config: str) -> None:
             json.dump(data, new_json_file)
 
 
-def run_xray(last_used_proxy: str) -> int:
+def run_xray(last_used_proxy: str) -> tuple[int, str]:
 
     configs: list = os.listdir("/tmp/x-ray-lates/okconfigs")
 
     while True:
+        if not configs:
+            return 0, "not found any Configs in directory"
 
         config: str = random.choice(configs)
         if config != last_used_proxy:
@@ -66,9 +68,15 @@ def main() -> None:
             logging.error(error)
         time.sleep(5)
 
-    pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
-    mongo_db[Collections.XRAY.value].insert_one(
-        {
-            "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
-        }
-    )
+    res: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
+    if not res:
+        pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
+        if pid == 0 and proxy == "not found any Configs in directory":
+            logging.error(proxy)
+            return 0
+
+        mongo_db[Collections.XRAY.value].insert_one(
+            {
+                "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
+            }
+        )
