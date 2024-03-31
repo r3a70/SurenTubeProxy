@@ -66,9 +66,12 @@ def main() -> None:
             logging.error(error)
         time.sleep(5)
 
-    pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
-    mongo_db[Collections.XRAY.value].insert_one(
-        {
-            "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
-        }
-    )
+    res: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
+    if not res:
+        pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
+
+        mongo_db[Collections.XRAY.value].insert_one(
+            {
+                "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
+            }
+        )
