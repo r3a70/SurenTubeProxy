@@ -71,7 +71,7 @@ def main() -> None:
     res: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
     if not res:
         pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
-        if not pid and proxy != "not found any Configs in directory":
+        if pid == 0 and proxy == "not found any Configs in directory":
             logging.error(proxy)
             return 0
 
