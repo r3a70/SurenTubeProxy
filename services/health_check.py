@@ -31,6 +31,7 @@ def health_check_ips() -> bool:
 
         if os.path.exists(os.path.join("/tmp/x-ray-lates/okconfigs", ip)):
 
-            os.remove(os.path.join("/tmp/x-ray-lates/okconfigs", ip))
+            # os.remove(os.path.join("/tmp/x-ray-lates/okconfigs", ip))
+            pass
         
         main()
