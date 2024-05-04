@@ -1,20 +1,26 @@
-import requests
-import logging
 import os
+import logging
 
+import requests
 
 from services.changer import main
-from enums.collections import Collections
-from database.mongodb import mongo_db
 
 
 HTTPBIN: str = "https://httpbin.org/ip"
 
 
-def health_check_ips() -> bool:
+def health_check_ips(is_recursive: bool = False) -> bool:
 
     try:
-        proxies: dict = {"http": "http://localhost:2081", "https": "http://localhost:2081"}
+        mode = os.getenv("MODE")
+        port = {
+            "dev_socks": 5080, "dev_http": 5081,
+            "prd_socks": 2080, "prd_http": 2081
+        }
+        proxies: dict = {
+            "http": f"http://localhost:{port[f'{mode}_http']}",
+            "https": f"http://localhost:{port[f'{mode}_socks']}"
+        }
         with requests.Session() as session:
 
             response = session.get(url=HTTPBIN, proxies=proxies, timeout=10)
@@ -25,13 +31,11 @@ def health_check_ips() -> bool:
                 logging.info("ip works. his result is %s", data)
 
     except Exception as error:
+
         logging.error("An error acurred %s\n", error)
-        query: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
-        ip: str = query.get("last_used_proxy") if query else "nothing.json"
 
-        if os.path.exists(os.path.join("/tmp/x-ray-lates/okconfigs", ip)):
+        if not is_recursive:
 
-            # os.remove(os.path.join("/tmp/x-ray-lates/okconfigs", ip))
-            pass
-        
+            return health_check_ips(is_recursive=True)
+
         main()

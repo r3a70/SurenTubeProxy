@@ -33,7 +33,7 @@ def extract_zip() -> None:
     if os.path.exists("/tmp/x-ray-lates"):
 
         return
-        
+
     with ZipFile("/tmp/x-ray-lates.zip") as zip:
 
         zip.extractall("/tmp/x-ray-lates")
@@ -70,7 +70,7 @@ def get_configs() -> None:
 
         logging.error(error)
 
-            
+
 def convert_and_move_configs() -> None:
 
     if not os.path.exists("/tmp/x-ray-lates/configs"):
@@ -97,8 +97,8 @@ def convert_and_move_configs() -> None:
                 command: list = [
                     "bash",
                     "scripts/vmess2json.sh",
-                    "--http-proxy", "3081",
-                    "--socks5-proxy", "3080",
+                    "--http-proxy", "4081",
+                    "--socks5-proxy", "4080",
                     vmess
                 ]
                 subprocess.run(
@@ -126,8 +126,8 @@ def convert_and_move_configs() -> None:
                 command: list = [
                     "bash",
                     "scripts/vless2json.sh",
-                    "--http-proxy", "3081",
-                    "--socks5-proxy", "3080",
+                    "--http-proxy", "4081",
+                    "--socks5-proxy", "4080",
                     vmess
                 ]
                 subprocess.run(
@@ -182,7 +182,15 @@ def test_configs_connection() -> None:
 
         time.sleep(10)
         try:
-            proxies: dict = {"http": "http://localhost:3081", "https": "http://localhost:3081"}
+            mode = os.getenv("MODE")
+            port = {
+                "dev_socks": 4080, "dev_http": 4081,
+                "prd_socks": 2080, "prd_http": 2081
+            }
+            proxies: dict = {
+                "http": f"http://localhost:{port[f'{mode}_http']}",
+                "https": f"http://localhost:{port[f'{mode}_http']}"
+            }
             with requests.Session() as session:
 
                 response = session.get(url=HTTPBIN, proxies=proxies, timeout=5)
@@ -194,14 +202,15 @@ def test_configs_connection() -> None:
                     process.kill()
                     os.rename(
                         src=os.path.join("/tmp/x-ray-lates/configs", config),
-                        dst=os.path.join("/tmp/x-ray-lates/okconfigs", f"{data.get('origin')}.json"),
+                        dst=os.path.join("/tmp/x-ray-lates/okconfigs",
+                                         f"{data.get('origin')}.json"),
                     )
 
         except Exception as error:
             process.kill()
             logging.error("An error acurred %s\n", error)
             os.remove(os.path.join("/tmp/x-ray-lates/configs", config))
-        
+
 
 def main() -> None:
 

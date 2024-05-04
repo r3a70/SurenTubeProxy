@@ -10,9 +10,16 @@ import json
 from enums.collections import Collections
 from database.mongodb import mongo_db
 from utils.times import utcnow
+from services.setup import main as setup_main
 
 
 def make_change(config: str) -> None:
+
+    mode = os.getenv("MODE")
+    proxies = {
+        "dev_socks": 5080, "dev_http": 5081,
+        "prd_socks": 2080, "prd_http": 2081
+    }
 
     with open(os.path.join("/tmp/x-ray-lates/okconfigs", config)) as file:
 
@@ -22,14 +29,14 @@ def make_change(config: str) -> None:
 
             if port['protocol'] == "socks":
 
-                port.update({"port": 2080})
+                port.update({"port": proxies[f"{mode}_socks"]})
 
             else:
 
-                port.update({"port": 2081})
+                port.update({"port": proxies[f"{mode}_http"]})
 
         with open(os.path.join("/tmp/x-ray-lates/okconfigs", config), "w") as new_json_file:
-            
+
             json.dump(data, new_json_file)
 
 
@@ -46,11 +53,10 @@ def run_xray(last_used_proxy: str) -> tuple[int, str]:
             break
 
     make_change(config=config)
-    
+
     process: subprocess.Popen = subprocess.Popen(
         ["./xray", "run", "-c", os.path.join("/tmp/x-ray-lates/okconfigs", config)],
-        cwd="/tmp/x-ray-lates/",
-        # stdout=subprocess.PIPE
+        cwd="/tmp/x-ray-lates/"
     )
 
     return process.pid, config
@@ -58,25 +64,23 @@ def run_xray(last_used_proxy: str) -> tuple[int, str]:
 
 def main() -> None:
 
-    res: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
+    res: dict | None = mongo_db[Collections.XRAY.value].find_one_and_delete({"is_pid": True})
     if res:
         db_pid: int = res.get("pid")
-        mongo_db[Collections.XRAY.value].delete_one({"_id": res.get("_id")})
         try:
             os.kill(db_pid, SIGTERM)
         except ProcessLookupError as error:
             logging.error(error)
         time.sleep(5)
 
-    res: dict | None = mongo_db[Collections.XRAY.value].find_one({"is_pid": True})
-    if not res:
-        pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
-        if pid == 0 and proxy == "not found any Configs in directory":
-            logging.error(proxy)
-            return 0
+    pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
+    if not pid:
+        logging.error(proxy)
+        setup_main()
+        return 0
 
-        mongo_db[Collections.XRAY.value].insert_one(
-            {
-                "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
-            }
-        )
+    mongo_db[Collections.XRAY.value].insert_one(
+        {
+            "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
+        }
+    )
