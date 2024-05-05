@@ -4,8 +4,11 @@
 ## it's recommend Running it using Docker:
 
 # Installations
-## you just need to fill the .env file. check .env.example
-## after running Docker will expose two ports. 2080 for socks and 2081 for http
+## you just need to fill out the .env file. check .env.example
+## after running, Docker will expose two ports. 2080 for socks and 2081 for http
 
+## Tasks
 
-# Enjoy it .....
+- [ ] .1 change mongodb to sqlite
+- [ ] .2 organize code with class
+- [ ] .3 scrape configs

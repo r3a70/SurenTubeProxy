@@ -10,7 +10,6 @@ import json
 from enums.collections import Collections
 from database.mongodb import mongo_db
 from utils.times import utcnow
-from services.setup import main as setup_main
 
 
 def make_change(config: str) -> None:
@@ -64,6 +63,8 @@ def run_xray(last_used_proxy: str) -> tuple[int, str]:
 
 def main() -> None:
 
+    logging.warning("main() in changer.py")
+
     res: dict | None = mongo_db[Collections.XRAY.value].find_one_and_delete({"is_pid": True})
     if res:
         db_pid: int = res.get("pid")
@@ -76,7 +77,6 @@ def main() -> None:
     pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
     if not pid:
         logging.error(proxy)
-        setup_main()
         return 0
 
     mongo_db[Collections.XRAY.value].insert_one(
