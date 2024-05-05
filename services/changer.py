@@ -5,10 +5,10 @@ import subprocess
 import logging
 import time
 import json
+import sqlite3
 
 
-from enums.collections import Collections
-from database.mongodb import mongo_db
+from database.sqllite import con
 from utils.times import utcnow
 
 
@@ -63,24 +63,24 @@ def run_xray(last_used_proxy: str) -> tuple[int, str]:
 
 def main() -> None:
 
-    logging.warning("main() in changer.py")
+    cur = con.cursor()
+    query: sqlite3.Cursor = cur.execute("SELECT * FROM xray WHERE is_pid = ?;", (1,))
+    res = query.fetchone()
 
-    res: dict | None = mongo_db[Collections.XRAY.value].find_one_and_delete({"is_pid": True})
     if res:
-        db_pid: int = res.get("pid")
+        cur.execute("DELETE FROM xray WHERE id = ?;", (res[0],))
+        db_pid: int = res[2]
         try:
             os.kill(db_pid, SIGTERM)
         except ProcessLookupError as error:
             logging.error(error)
         time.sleep(5)
 
-    pid, proxy = run_xray(last_used_proxy=res.get("last_used_proxy") if res else "")
+    pid, proxy = run_xray(last_used_proxy=res[-1] if res else "")
     if not pid:
         logging.error(proxy)
         return 0
 
-    mongo_db[Collections.XRAY.value].insert_one(
-        {
-            "is_pid": True, "pid": pid, "created_at": utcnow(), "last_used_proxy": proxy
-        }
-    )
+    cur.execute("INSERT INTO xray VALUES(?, ?, ?, ?);", (1, pid, utcnow(), proxy))
+
+    cur.close()

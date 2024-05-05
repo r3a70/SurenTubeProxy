@@ -11,4 +11,5 @@
 
 - [ ] .1 change mongodb to sqlite
 - [ ] .2 organize code with class
-- [ ] .3 scrape configs
+- [ ] .3 change configs to json with python code instead of using third-party lib
+- [ ] .4 scrape configs
