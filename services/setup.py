@@ -9,6 +9,13 @@ import requests
 from enums.common import Const
 
 
+mode = os.getenv("MODE")
+port = {
+    "dev_socks": 4080, "dev_http": 4081,
+    "prd_socks": 2080, "prd_http": 2081
+}
+
+
 def download_requirements() -> None:
 
     if os.path.exists("/tmp/x-ray-lates.zip"):
@@ -93,8 +100,8 @@ def convert_and_move_configs() -> None:
                 command: list = [
                     "bash",
                     "scripts/vmess2json.sh",
-                    "--http-proxy", "4081",
-                    "--socks5-proxy", "4080",
+                    "--http-proxy", f"{port[f'{mode}_http']}",
+                    "--socks5-proxy", f"{port[f'{mode}_socks']}",
                     vmess
                 ]
                 subprocess.run(
@@ -122,8 +129,8 @@ def convert_and_move_configs() -> None:
                 command: list = [
                     "bash",
                     "scripts/vless2json.sh",
-                    "--http-proxy", "4081",
-                    "--socks5-proxy", "4080",
+                    "--http-proxy", f"{port[f'{mode}_http']}",
+                    "--socks5-proxy", f"{port[f'{mode}_socks']}",
                     vless
                 ]
                 subprocess.run(
@@ -177,11 +184,7 @@ def test_configs_connection() -> None:
 
         time.sleep(10)
         try:
-            mode = os.getenv("MODE")
-            port = {
-                "dev_socks": 4080, "dev_http": 4081,
-                "prd_socks": 2080, "prd_http": 2081
-            }
+
             proxies: dict = {
                 "http": f"http://localhost:{port[f'{mode}_http']}",
                 "https": f"http://localhost:{port[f'{mode}_http']}"

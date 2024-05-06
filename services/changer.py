@@ -81,7 +81,10 @@ def main() -> None:
         logging.error(proxy)
         return 0
 
-    cur.execute("INSERT INTO xray VALUES(?, ?, ?, ?);", (1, pid, utcnow(), proxy))
+    cur.execute(
+        "INSERT INTO xray (is_pid, pid, created_at, last_used_proxy) VALUES(?, ?, ?, ?);",
+        (1, pid, utcnow(), proxy)
+    )
     cur.commit()
 
     cur.close()
