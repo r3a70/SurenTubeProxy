@@ -12,7 +12,7 @@ from enums.common import Const
 mode = os.getenv("MODE")
 port = {
     "dev_socks": 4080, "dev_http": 4081,
-    "prd_socks": 2080, "prd_http": 2081
+    "prd_socks": 3080, "prd_http": 3081
 }
 
 
