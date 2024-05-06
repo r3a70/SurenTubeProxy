@@ -82,5 +82,6 @@ def main() -> None:
         return 0
 
     cur.execute("INSERT INTO xray VALUES(?, ?, ?, ?);", (1, pid, utcnow(), proxy))
+    cur.commit()
 
     cur.close()

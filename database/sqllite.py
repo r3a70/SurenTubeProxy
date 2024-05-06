@@ -18,7 +18,9 @@ class SqliteSingleton:
 
 
 con = SqliteSingleton(os.getenv("DB_NAME"), check_same_thread=False).client
-con.execute("""
+
+cur = con.cursor()
+cur.execute("""
 CREATE TABLE IF NOT EXISTS xray(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     is_pid INTEGER NOT NULL CHECK (is_pid IN (0, 1)),
@@ -27,3 +29,4 @@ CREATE TABLE IF NOT EXISTS xray(
     last_used_proxy TEXT NOT NULL
 );
 """)
+cur.close()
