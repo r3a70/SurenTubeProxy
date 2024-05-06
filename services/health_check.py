@@ -37,5 +37,3 @@ def health_check_ips(is_recursive: bool = False) -> bool:
         if not is_recursive:
 
             return health_check_ips(is_recursive=True)
-
-        main()
