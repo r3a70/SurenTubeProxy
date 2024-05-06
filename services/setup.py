@@ -172,8 +172,7 @@ def test_configs_connection() -> None:
 
         process: subprocess.Popen = subprocess.Popen(
             ["./xray", "run", "-c", os.path.join("/tmp/x-ray-lates/configs", config)],
-            cwd="/tmp/x-ray-lates/",
-            stdout=subprocess.PIPE
+            cwd="/tmp/x-ray-lates/"
         )
 
         time.sleep(10)
