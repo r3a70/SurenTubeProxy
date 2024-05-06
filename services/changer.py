@@ -85,6 +85,6 @@ def main() -> None:
         "INSERT INTO xray (is_pid, pid, created_at, last_used_proxy) VALUES(?, ?, ?, ?);",
         (1, pid, utcnow(), proxy)
     )
-    cur.commit()
+    con.commit()
 
     cur.close()
