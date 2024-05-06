@@ -6,11 +6,7 @@ import logging
 import requests
 
 
-HTTPBIN: str = "https://httpbin.org/ip"
-X_RAY_LATEST_RELEASE_DIRECT_DOWNLOAD_URL: str = """https://github.com/XTLS/Xray-core/releases/download/v1.8.9/Xray-linux-64.zip"""
-TO_JSON_SCRIPT: str = "https://github.com/ImanSeyed/v2ray-uri2json.git"
-VMESS: str = "https://raw.githubusercontent.com/Kwinshadow/TelegramV2rayCollector/main/sublinks/vmess.txt"
-VLESS: str = "https://raw.githubusercontent.com/Kwinshadow/TelegramV2rayCollector/main/sublinks/vless.txt"
+from enums.common import Const
 
 
 def download_requirements() -> None:
@@ -19,7 +15,7 @@ def download_requirements() -> None:
 
         return
 
-    url: str = X_RAY_LATEST_RELEASE_DIRECT_DOWNLOAD_URL
+    url: str = Const.X_RAY_LATEST_RELEASE_DIRECT_DOWNLOAD_URL.value
 
     with requests.Session().get(url=url) as response:
 
@@ -33,7 +29,7 @@ def extract_zip() -> None:
     if os.path.exists("/tmp/x-ray-lates"):
 
         return
-        
+
     with ZipFile("/tmp/x-ray-lates.zip") as zip:
 
         zip.extractall("/tmp/x-ray-lates")
@@ -47,20 +43,20 @@ def download_config_2_json() -> None:
 
         return
 
-    subprocess.run(["git", "clone", TO_JSON_SCRIPT], cwd="/tmp/x-ray-lates/")
+    subprocess.run(["git", "clone", Const.TO_JSON_SCRIPT.value], cwd="/tmp/x-ray-lates/")
 
 
 def get_configs() -> None:
 
     try:
 
-        with requests.Session().get(url=VMESS) as response:
+        with requests.Session().get(url=Const.VMESS.value) as response:
 
             with open("/tmp/x-ray-lates/v2ray-uri2json/vmess.txt", "wb") as file:
 
                 file.write(response.content)
 
-        with requests.Session().get(url=VLESS) as response:
+        with requests.Session().get(url=Const.VLESS.value) as response:
 
             with open("/tmp/x-ray-lates/v2ray-uri2json/vless.txt", "wb") as file:
 
@@ -70,7 +66,7 @@ def get_configs() -> None:
 
         logging.error(error)
 
-            
+
 def convert_and_move_configs() -> None:
 
     if not os.path.exists("/tmp/x-ray-lates/configs"):
@@ -83,7 +79,7 @@ def convert_and_move_configs() -> None:
 
             os.remove(os.path.join("/tmp/x-ray-lates/configs", file))
 
-    all_vmess = 0
+    all_configs = 0
     with open("/tmp/x-ray-lates/v2ray-uri2json/vmess.txt") as content:
 
         for index, line in enumerate(content.readlines(), start=1):
@@ -97,8 +93,8 @@ def convert_and_move_configs() -> None:
                 command: list = [
                     "bash",
                     "scripts/vmess2json.sh",
-                    "--http-proxy", "3081",
-                    "--socks5-proxy", "3080",
+                    "--http-proxy", "4081",
+                    "--socks5-proxy", "4080",
                     vmess
                 ]
                 subprocess.run(
@@ -111,24 +107,24 @@ def convert_and_move_configs() -> None:
                     capture_output=True,
                     cwd="/tmp/x-ray-lates/v2ray-uri2json",
                 )
-                all_vmess += 1
+                all_configs += 1
 
     with open("/tmp/x-ray-lates/v2ray-uri2json/vless.txt") as content:
 
-        for index, line in enumerate(content.readlines(), start=all_vmess + 1):
+        for index, line in enumerate(content.readlines(), start=all_configs + 1):
 
             val = index
             if val < 10:
                 val = f"0{index}"
 
-            vmess: str = line.strip()
-            if vmess:
+            vless: str = line.strip()
+            if vless:
                 command: list = [
                     "bash",
                     "scripts/vless2json.sh",
-                    "--http-proxy", "3081",
-                    "--socks5-proxy", "3080",
-                    vmess
+                    "--http-proxy", "4081",
+                    "--socks5-proxy", "4080",
+                    vless
                 ]
                 subprocess.run(
                     command,
@@ -182,26 +178,39 @@ def test_configs_connection() -> None:
 
         time.sleep(10)
         try:
-            proxies: dict = {"http": "http://localhost:3081", "https": "http://localhost:3081"}
+            mode = os.getenv("MODE")
+            port = {
+                "dev_socks": 4080, "dev_http": 4081,
+                "prd_socks": 2080, "prd_http": 2081
+            }
+            proxies: dict = {
+                "http": f"http://localhost:{port[f'{mode}_http']}",
+                "https": f"http://localhost:{port[f'{mode}_http']}"
+            }
             with requests.Session() as session:
 
-                response = session.get(url=HTTPBIN, proxies=proxies, timeout=5)
+                response = session.get(url=Const.HTTPBIN.value, proxies=proxies, timeout=5)
                 data: dict = response.json()
 
                 if data.get("origin"):
 
-                    logging.info("This {} config works. his result is {}".format(config, data))
+                    logging.info(
+                        "test-configs-connection: This {} works. his result is {}".format(
+                            config, data
+                        )
+                    )
                     process.kill()
                     os.rename(
                         src=os.path.join("/tmp/x-ray-lates/configs", config),
-                        dst=os.path.join("/tmp/x-ray-lates/okconfigs", f"{data.get('origin')}.json"),
+                        dst=os.path.join("/tmp/x-ray-lates/okconfigs",
+                                         f"{data.get('origin')}.json"),
                     )
 
         except Exception as error:
             process.kill()
-            logging.error("An error acurred %s\n", error)
+            logging.error("test-configs-connection: An error acurred %s\n", error)
             os.remove(os.path.join("/tmp/x-ray-lates/configs", config))
-        
+
 
 def main() -> None:
 

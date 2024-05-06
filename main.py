@@ -41,7 +41,7 @@ scheduler.add_job(
 scheduler.add_job(
     func=health_check.health_check_ips,
     trigger="interval",
-    minutes=1
+    minutes=5
 )
 
 if __name__ == '__main__':
