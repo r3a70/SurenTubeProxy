@@ -4,6 +4,7 @@ import subprocess
 import time
 import logging
 import requests
+import base64
 
 
 from enums.common import Const
@@ -61,13 +62,13 @@ def get_configs() -> None:
 
             with open("/tmp/x-ray-lates/v2ray-uri2json/vmess.txt", "wb") as file:
 
-                file.write(response.content)
+                file.write(base64.b64decode(response.content))
 
         with requests.Session().get(url=Const.VLESS.value) as response:
 
             with open("/tmp/x-ray-lates/v2ray-uri2json/vless.txt", "wb") as file:
 
-                file.write(response.content)
+                file.write(base64.b64decode(response.content))
 
     except Exception as error:
 
