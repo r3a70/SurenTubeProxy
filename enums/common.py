@@ -9,8 +9,8 @@ class Const(Enum):
     """.strip()
     TO_JSON_SCRIPT: str = "https://github.com/ImanSeyed/v2ray-uri2json.git"
     VMESS: str = """
-    https://raw.githubusercontent.com/Kwinshadow/TelegramV2rayCollector/main/sublinks/vmess.txt
+    https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vmess.txt
     """.strip()
     VLESS: str = """
-    https://raw.githubusercontent.com/Kwinshadow/TelegramV2rayCollector/main/sublinks/vless.txt
+    https://raw.githubusercontent.com/barry-far/V2ray-Configs/main/Splitted-By-Protocol/vless.txt
     """.strip()
