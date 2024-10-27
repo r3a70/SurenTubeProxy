@@ -6,6 +6,8 @@ import logging
 import requests
 import base64
 
+from yt_dlp import YoutubeDL
+
 
 from enums.common import Const
 
@@ -190,6 +192,18 @@ def test_configs_connection() -> None:
                 "http": f"http://localhost:{port[f'{mode}_http']}",
                 "https": f"http://localhost:{port[f'{mode}_http']}"
             }
+            ydl_opts = {
+                'proxy': proxies["http"],
+                'quite': True
+            }
+
+            with YoutubeDL(ydl_opts) as ytdlp:
+
+                ytdlp.extract_info(
+                    url="https://www.youtube.com/watch?v=ido8s_vGqcM",
+                    download=False
+                )
+
             with requests.Session() as session:
 
                 response = session.get(url=Const.HTTPBIN.value, proxies=proxies, timeout=5)
