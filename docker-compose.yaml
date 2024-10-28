@@ -3,6 +3,7 @@ services:
   bot:
     container_name: SurenTubeProxy
     image: ram3a9670/surentubeproxy:latest
+    restart: always
     volumes:
       - .:/app
     command: make bot
