@@ -39,9 +39,23 @@ def make_change(config: str) -> None:
             json.dump(data, new_json_file)
 
 
-def run_xray(last_used_proxy: str) -> tuple[int, str]:
+def run_xray(last_used_proxy: str, max_depth: int = 0) -> tuple[int, str]:
+
+    if max_depth > 100:
+
+        return 0, ""
+
+    if not os.path.exists("/tmp/x-ray-lates/okconfigs"):
+
+        logging.info("okconfigs directory is not found, depth is {}".format(max_depth))
+        time.sleep(60)
+        return run_xray(last_used_proxy, max_depth + 1)
 
     configs: list = os.listdir("/tmp/x-ray-lates/okconfigs")
+    if not configs:
+        logging.info("okconfigs directory is empty {}".format(max_depth))
+        time.sleep(60)
+        return run_xray(last_used_proxy, max_depth + 1)
 
     while True:
         if not configs:
