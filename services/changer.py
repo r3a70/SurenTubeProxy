@@ -57,14 +57,17 @@ def run_xray(last_used_proxy: str, max_depth: int = 0) -> tuple[int, str]:
         time.sleep(60)
         return run_xray(last_used_proxy, max_depth + 1)
 
+    count = 0
     while True:
         if not configs:
             return 0, "not found any Configs in directory"
 
         configs: list = os.listdir("/tmp/x-ray-lates/okconfigs")
         config: str = random.choice(configs)
-        if config != last_used_proxy:
+        if config != last_used_proxy or count >= 10:
             break
+
+        count += 1
 
     make_change(config=config)
 
