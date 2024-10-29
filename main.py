@@ -26,12 +26,12 @@ scheduler.add_job(
 scheduler.add_job(
     func=setup.main,
     trigger="interval",
-    hours=6
+    hours=2
 )
 scheduler.add_job(
     func=changer.main,
     trigger="date",
-    run_date=now() + timedelta(minutes=5)
+    run_date=now() + timedelta(seconds=5)
 )
 scheduler.add_job(
     func=changer.main,
