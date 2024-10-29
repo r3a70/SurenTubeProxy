@@ -26,7 +26,7 @@ scheduler.add_job(
 scheduler.add_job(
     func=setup.main,
     trigger="interval",
-    hours=2
+    hours=6
 )
 scheduler.add_job(
     func=changer.main,
@@ -36,7 +36,7 @@ scheduler.add_job(
 scheduler.add_job(
     func=changer.main,
     trigger="interval",
-    minutes=120
+    hours=2
 )
 scheduler.add_job(
     func=health_check.health_check_ips,
